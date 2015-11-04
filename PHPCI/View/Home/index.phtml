@@ -1,4 +1,13 @@
 <?php use PHPCI\Helper\Lang; ?>
+<script language="javascript">
+    function reloadDashboard() {
+        if (document.location.pathname !== '/')
+            return;
+        document.location.reload();
+    }
+    setTimeout(reloadDashboard, 20000);
+</script>
+
 <div class="row">
 
     <div class="col-sm-5">
