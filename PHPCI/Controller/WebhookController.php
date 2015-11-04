@@ -319,7 +319,11 @@ class WebhookController extends \PHPCI\Controller
             return true;
         }
 
-        $project = $this->projectStore->getById($projectId);
+        $project = $this->projectStore->getById((int)$projectId);
+
+        if (empty($project)) {
+            $project = $this->projectStore->getByRepository($projectId);
+        }
 
         if (empty($project)) {
             throw new \Exception('Project does not exist:' . $projectId);

@@ -58,6 +58,32 @@ class ProjectStoreBase extends Store
     }
 
     /**
+     * Returns a Project model by Repository name.
+     * @param mixed $value
+     * @param string $useConnection
+     * @throws HttpException
+     * @return \@appNamespace\Model\Project|null
+     */
+    public function getByRepository($value, $useConnection = 'read')
+    {
+        if (is_null($value)) {
+            throw new HttpException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
+        }
+
+        $query = 'SELECT * FROM `project` WHERE `reference` LIKE :ref LIMIT 1';
+        $stmt = Database::getConnection($useConnection)->prepare($query);
+        $stmt->bindValue(':ref', '%' . $value . '.git');
+
+        if ($stmt->execute()) {
+            if ($data = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+                return new Project($data);
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns an array of Project models by Title.
      * @param mixed $value
      * @param int $limit
