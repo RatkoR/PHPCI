@@ -21,7 +21,7 @@
             <?php Lang::out('branch_x', $build->getBranch()); ?>
 
             <div class="pull-right">
-                <a style="color:white; font-weight:bold;" target="_blank" href="/coverage/<?php print $build->getProjectId(); ?>/<?php print $build->getId(); ?>/report">Coverage report</a>
+                <a style="color:white; font-weight:bold;" target="_blank" href="/coverage/<?php print $build->getProjectId(); ?>/<?php print $build->getId(); ?>/report/index.html">Coverage report</a>
             </div>
 
             <?php if ($build->getCommitId() != 'Manual'): ?>
