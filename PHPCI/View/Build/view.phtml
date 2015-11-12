@@ -20,6 +20,10 @@
 
             <?php Lang::out('branch_x', $build->getBranch()); ?>
 
+            <div class="pull-right">
+                <a style="color:white; font-weight:bold;" target="_blank" href="/coverage/<?php print $build->getProjectId(); ?>/<?php print $build->getId(); ?>/report">Coverage report</a>
+            </div>
+
             <?php if ($build->getCommitId() != 'Manual'): ?>
                 <br><?php Lang::out('commit_id_x', $build->getCommitId()); ?>
             <?php endif; ?>
@@ -28,8 +32,8 @@
 </div>
 
 <div class="row">
-	<div class="col-lg-12">
-		<div id="status"></div>
+    <div class="col-lg-12">
+        <div id="status"></div>
         <div id="plugins" class="row"></div>
     </div>
 </div>
