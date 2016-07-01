@@ -8,8 +8,8 @@
             <p>Your commit <strong><?php print $build->getCommitId(); ?></strong> genrate a successfull build in project <strong><?php print $project->getTitle(); ?></strong>.</p>
 
             <p style="margin: 10px; background: #fafafa"><?php print $build->getCommitMessage(); ?></p>
-            <pre><?php print $build->getLog(); ?></pre>
             <p>You can review <a href="<?php print $build->getCommitLink(); ?>">your commit</a> and the <a href="<?php print PHPCI_URL . 'build/view/' . $build->getId(); ?>">build log</a>.</p>
+            <pre><?php print $build->getLog(); ?></pre>
         </div>
     </div>
 </div>
