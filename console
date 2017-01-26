@@ -34,4 +34,7 @@ $application->add(new DaemonCommand($loggerConfig->getFor('DaemonCommand')));
 $application->add(new PollCommand($loggerConfig->getFor('PollCommand')));
 $application->add(new CreateAdminCommand(Factory::getStore('User')));
 
+ini_set('mysql.connect_timeout', 300);
+ini_set('default_socket_timeout', 300);
+
 $application->run();
