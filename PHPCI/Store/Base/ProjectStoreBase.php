@@ -44,7 +44,7 @@ class ProjectStoreBase extends Store
             throw new HttpException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
         }
 
-        $query = 'SELECT * FROM `project` WHERE `id` = :id LIMIT 1';
+        $query = 'SELECT * FROM `project` WHERE `id` = :id or `title` = :id LIMIT 1';
         $stmt = Database::getConnection($useConnection)->prepare($query);
         $stmt->bindValue(':id', $value);
 
