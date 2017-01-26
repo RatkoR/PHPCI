@@ -30,6 +30,14 @@ $qstring['message'] = $commit['changesets']['values'][0]['toCommit']['message'];
 $projectId = $commit['repository']['slug'];
 
 /**
+ * Don't do anything if it's not master branch
+ */
+if ($qstring['branch'] !== 'master') {
+//    error_log("Not master branch!\n".print_r($qstring,1)."\n", 3, "/tmp/stash.log");
+    die('Not master branch');
+}
+
+/**
  * Url of the phpci testing server
  */
 $url = "http://" . $_SERVER['HTTP_HOST']
@@ -40,4 +48,4 @@ echo "OK";
 
 $ret = file_get_contents($url);
 
-//error_log("\n".$url."\n".$ret."\n", 3, "/tmp/stash.log");
+//error_log("\n".$url."\n".$ret."\n".print_r($qstring,1)."\n", 3, "/tmp/stash.log");
