@@ -31,7 +31,7 @@ class BuildErrorStore extends BuildErrorStoreBase
             $query .= ' AND created_date > :since';
         }
 
-        $query .= ' LIMIT 5000';
+        $query .= ' LIMIT 15000';
 
         $stmt = Database::getConnection('read')->prepare($query);
 
@@ -50,6 +50,29 @@ class BuildErrorStore extends BuildErrorStoreBase
             $rtn = array_map($map, $res);
 
             return $rtn;
+        } else {
+            return array();
+        }
+    }
+
+    /**
+     * Gets the total number of errors for a given build.
+     * @param $buildId
+     * @param string $since date string
+     * @return array
+     */
+    public function getErrorTotalForBuild($buildId)
+    {
+        $query = 'SELECT COUNT(*) AS total FROM build_error
+                    WHERE build_id = :build';
+
+        $stmt = Database::getConnection('read')->prepare($query);
+
+        $stmt->bindValue(':build', $buildId, \PDO::PARAM_INT);
+
+        if ($stmt->execute()) {
+            $res = $stmt->fetch(\PDO::FETCH_ASSOC);
+            return $res['total'];
         } else {
             return array();
         }

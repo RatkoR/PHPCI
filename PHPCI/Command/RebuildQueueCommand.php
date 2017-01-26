@@ -10,21 +10,23 @@
 namespace PHPCI\Command;
 
 use b8\Config;
+use b8\Store\Factory;
 use Monolog\Logger;
+use PHPCI\BuildFactory;
+use PHPCI\Helper\Lang;
 use PHPCI\Logging\OutputLogHandler;
-use PHPCI\Worker\BuildWorker;
+use PHPCI\Service\BuildService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 
 /**
-* Worker Command - Starts the BuildWorker, which pulls jobs from beanstalkd
 * @author       Dan Cryer <dan@block8.co.uk>
 * @package      PHPCI
 * @subpackage   Console
 */
-class WorkerCommand extends Command
+class RebuildQueueCommand extends Command
 {
     /**
      * @var OutputInterface
@@ -49,9 +51,8 @@ class WorkerCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('phpci:worker')
-            ->setDescription('Runs the PHPCI build worker.')
-            ->addOption('debug', null, null, 'Run PHPCI in Debug Mode');
+            ->setName('phpci:rebuild-queue')
+            ->setDescription('Rebuilds the PHPCI worker queue.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -66,22 +67,19 @@ class WorkerCommand extends Command
             );
         }
 
-        // Allow PHPCI to run in "debug mode"
-        if ($input->hasOption('debug') && $input->getOption('debug')) {
-            $output->writeln('<comment>Debug mode enabled.</comment>');
-            define('PHPCI_DEBUG_MODE', true);
+        $store = Factory::getStore('Build');
+        $result = $store->getByStatus(0);
+
+        $this->logger->addInfo(Lang::get('found_n_builds', count($result['items'])));
+
+        $buildService = new BuildService($store);
+
+        while (count($result['items'])) {
+            $build = array_shift($result['items']);
+            $build = BuildFactory::getBuild($build);
+
+            $this->logger->addInfo('Added build #' . $build->getId() . ' to queue.');
+            $buildService->addBuildToQueue($build);
         }
-
-        $config = Config::getInstance()->get('phpci.worker', []);
-
-        if (empty($config['host']) || empty($config['queue'])) {
-            $error = 'The worker is not configured. You must set a host and queue in your config.yml file.';
-            throw new \Exception($error);
-        }
-
-        $worker = new BuildWorker($config['host'], $config['queue']);
-        $worker->setLogger($this->logger);
-        $worker->setMaxJobs(Config::getInstance()->get('phpci.worker.max_jobs', -1));
-        $worker->startWorker();
     }
 }
