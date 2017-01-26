@@ -39,4 +39,7 @@ $application->add(new CreateAdminCommand(Factory::getStore('User')));
 $application->add(new CreateBuildCommand(Factory::getStore('Project'), new BuildService(Factory::getStore('Build'))));
 $application->add(new WorkerCommand($loggerConfig->getFor('WorkerCommand')));
 
+ini_set('mysql.connect_timeout', 300);
+ini_set('default_socket_timeout', 300);
+
 $application->run();

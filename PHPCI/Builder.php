@@ -188,14 +188,6 @@ class Builder implements LoggerAwareInterface
         $this->build->sendStatusPostback();
         $success = true;
 
-        $previous_build = $this->build->getProject()->getPreviousBuild($this->build->getBranch());
-
-        $previous_state = Build::STATUS_NEW;
-
-        if ($previous_build) {
-            $previous_state = $previous_build->getStatus();
-        }
-
         try {
             // Set up the build:
             $this->setupBuild();
@@ -218,21 +210,20 @@ class Builder implements LoggerAwareInterface
 
             if ($success) {
                 $this->pluginExecutor->executePlugins($this->config, 'success');
-
-                if ($previous_state == Build::STATUS_FAILED) {
-                    $this->pluginExecutor->executePlugins($this->config, 'fixed');
-                }
-
                 $this->buildLogger->logSuccess(Lang::get('build_success'));
             } else {
                 $this->pluginExecutor->executePlugins($this->config, 'failure');
-
-                if ($previous_state == Build::STATUS_SUCCESS || $previous_state == Build::STATUS_NEW) {
-                    $this->pluginExecutor->executePlugins($this->config, 'broken');
-                }
-
                 $this->buildLogger->logFailure(Lang::get('build_failed'));
             }
+
+            // Clean up:
+            $this->buildLogger->log(Lang::get('removing_build'));
+
+            $cmd = 'rm -Rf "%s"';
+            if (IS_WIN) {
+                $cmd = 'rmdir /S /Q "%s"';
+            }
+//            $this->executeCommand($cmd, $this->buildPath);
         } catch (\Exception $ex) {
             $this->build->setStatus(Build::STATUS_FAILED);
             $this->buildLogger->logFailure(Lang::get('exception') . $ex->getMessage());
@@ -242,11 +233,6 @@ class Builder implements LoggerAwareInterface
         // Update the build in the database, ping any external services, etc.
         $this->build->sendStatusPostback();
         $this->build->setFinished(new \DateTime());
-
-        // Clean up:
-        $this->buildLogger->log(Lang::get('removing_build'));
-        $this->build->removeBuildDirectory();
-
         $this->store->save($this->build);
     }
 
@@ -277,14 +263,12 @@ class Builder implements LoggerAwareInterface
 
     /**
      * Find a binary required by a plugin.
-     * @param string $binary
-     * @param bool $quiet
-     *
+     * @param $binary
      * @return null|string
      */
-    public function findBinary($binary, $quiet = false)
+    public function findBinary($binary)
     {
-        return $this->commandExecutor->findBinary($binary, $quiet = false);
+        return $this->commandExecutor->findBinary($binary, $this->buildPath);
     }
 
     /**
@@ -303,7 +287,8 @@ class Builder implements LoggerAwareInterface
      */
     protected function setupBuild()
     {
-        $this->buildPath = $this->build->getBuildPath();
+        $this->buildPath = PHPCI_DIR . 'PHPCI/build/' . $this->build->getId() . '/';
+        $this->build->currentBuildPath = $this->buildPath;
 
         $this->interpolator->setupInterpolationVars(
             $this->build,
