@@ -162,6 +162,9 @@ class PhpUnit implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
         }
 
         $tapString = $this->phpci->getLastOutput();
+        
+        $this->phpci->log($tapString);
+        
         $tapString = mb_convert_encoding($tapString, "UTF-8", "ISO-8859-1");
 
         $lines = explode("\n", $tapString);
@@ -171,6 +174,8 @@ class PhpUnit implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
             $this->phpci->logFailure($lastLine);
             throw new \Exception('Phpunit failed: ' . $lastLine);
         }
+
+        $success = true;
 
 /*
         try {
@@ -211,15 +216,12 @@ class PhpUnit implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
             
             // alternative (our only) phpunit file
             $altPhpUnit = getcwd() . DIRECTORY_SEPARATOR . 'test_phpunit.sh';
-error_log("$altPhpUnit\n", 3, "/tmp/phpunit.log");            
 
             if (file_exists($altPhpUnit)) {
-error_log("exists\n", 3, "/tmp/phpunit.log");            
                 $phpunit = $altPhpUnit;
             }
 
             $cmd = $phpunit . ' %s -c "%s" ' . $this->coverage . $this->path;
-error_log($cmd . "\n\n", 3, "/tmp/phpunit.log");            
             $success = $this->phpci->executeCommand($cmd, $this->args, $this->phpci->buildPath . $configPath);
 
             if ($this->runFrom) {
@@ -247,17 +249,15 @@ error_log($cmd . "\n\n", 3, "/tmp/phpunit.log");
 
             // alternative (our only) phpunit file
             $altPhpUnit = getcwd() . DIRECTORY_SEPARATOR . 'test_phpunit.sh';
-error_log("$altPhpUnit\n", 3, "/tmp/phpunit.log");            
 
             if (file_exists($altPhpUnit)) {
-error_log("exists\n", 3, "/tmp/phpunit.log");            
                 $phpunit = $altPhpUnit;
             }
             
             $cmd = $phpunit . ' %s "%s"';
-error_log($cmd . "\n\n", 3, "/tmp/phpunit.log");            
 
             $success = $this->phpci->executeCommand($cmd, $this->args, $this->phpci->buildPath . $directory);
+
             chdir($curdir);
             return $success;
         }
