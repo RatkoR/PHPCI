@@ -153,7 +153,7 @@ class PhpUnit implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
 
         // Run any config files first. This can be either a single value or an array.
         if ($this->xmlConfigFile !== null) {
-            $success &= $this->runConfigFile($this->xmlConfigFile);
+//            $success &= $this->runConfigFile($this->xmlConfigFile);
         }
 
         // Run any dirs next. Again this can be either a single value or an array.
@@ -201,6 +201,8 @@ class PhpUnit implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
      * Run the tests defined in a PHPUnit config file.
      * @param $configPath
      * @return bool|mixed
+     *
+     * SE NE KLICE VEC
      */
     protected function runConfigFile($configPath)
     {
@@ -216,12 +218,19 @@ class PhpUnit implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
             
             // alternative (our only) phpunit file
             $altPhpUnit = getcwd() . DIRECTORY_SEPARATOR . 'test_phpunit.sh';
+error_log("$altPhpUnit \n", 3, "/tmp/unit.log");
+error_log("CONF: $configPath \n", 3, "/tmp/unit.log");
+error_log("RUN FROM: " . $this->runFrom . " \n", 3, "/tmp/unit.log");
 
             if (file_exists($altPhpUnit)) {
-                $phpunit = $altPhpUnit;
+                $id = basename(getcwd());
+error_log("exists \n", 3, "/tmp/unit.log");
+                $phpunit = $altPhpUnit . " $id";
             }
 
             $cmd = $phpunit . ' %s -c "%s" ' . $this->coverage . $this->path;
+error_log($cmd . "\n", 3, "/tmp/unit.log");
+return 0;
             $success = $this->phpci->executeCommand($cmd, $this->args, $this->phpci->buildPath . $configPath);
 
             if ($this->runFrom) {
@@ -249,12 +258,17 @@ class PhpUnit implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
 
             // alternative (our only) phpunit file
             $altPhpUnit = getcwd() . DIRECTORY_SEPARATOR . 'test_phpunit.sh';
+//error_log("XX $altPhpUnit \n", 3, "/tmp/unit.log");
+//error_log("XX dir: $directory \n", 3, "/tmp/unit.log");
 
             if (file_exists($altPhpUnit)) {
-                $phpunit = $altPhpUnit;
+//error_log("XX exists \n", 3, "/tmp/unit.log");
+                $id = basename(getcwd());
+                $phpunit = $altPhpUnit . " $id";
             }
             
-            $cmd = $phpunit . ' %s "%s"';
+            $cmd = $phpunit;
+//error_log("XX " . $cmd . "\n", 3, "/tmp/unit.log");
 
             $success = $this->phpci->executeCommand($cmd, $this->args, $this->phpci->buildPath . $directory);
 
