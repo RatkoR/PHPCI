@@ -39,6 +39,7 @@ class Composer implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
     public static function canExecute($stage, Builder $builder, Build $build)
     {
         $path = $builder->buildPath . DIRECTORY_SEPARATOR . 'composer.json';
+//error_log("path: " . $path . " $stage \n\n", 3, "/tmp/comp.log");
 
         if (file_exists($path) && $stage == 'setup') {
             return true;
@@ -55,6 +56,8 @@ class Composer implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
      */
     public function __construct(Builder $phpci, Build $build, array $options = array())
     {
+//error_log("aaaaa\n\n", 3, "/tmp/comp.log");
+
         $path             = $phpci->buildPath;
         $this->phpci      = $phpci;
         $this->build      = $build;
@@ -98,6 +101,10 @@ class Composer implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
         if (IS_WIN) {
             $cmd = 'php ';
         }
+        
+        if (!$composerLocation) {
+            $composerLocation = '/usr/local/bin/composer';
+        }
 
         $cmd .= $composerLocation . ' --no-ansi --no-interaction ';
 
@@ -117,6 +124,7 @@ class Composer implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
         }
 
         $cmd .= ' --working-dir="%s" %s';
+// error_log($cmd . "\n\n", 3, "/tmp/comp.log");
 
         return $this->phpci->executeCommand($cmd, $this->directory, $this->action);
     }
