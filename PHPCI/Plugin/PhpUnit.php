@@ -168,14 +168,18 @@ class PhpUnit implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
         $tapString = mb_convert_encoding($tapString, "UTF-8", "ISO-8859-1");
 
         $lines = explode("\n", $tapString);
-        $lastLine = end($lines);
+        $success = false;
 
-        if (strpos($lastLine, "OK (") === false) {
-            $this->phpci->logFailure($lastLine);
-            throw new \Exception('Phpunit failed: ' . $lastLine);
+        foreach ($lines AS $line) {
+            if (strpos($line, "OK (") !== false) {
+                $success = true;
+            }
         }
-
-        $success = true;
+        
+        if (!$success) {
+            $this->phpci->logFailure($tapString);
+            throw new \Exception('Phpunit failed! No line with OK found in report.');
+        }
 
 /*
         try {
@@ -218,19 +222,18 @@ class PhpUnit implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
             
             // alternative (our only) phpunit file
             $altPhpUnit = getcwd() . DIRECTORY_SEPARATOR . 'test_phpunit.sh';
-error_log("$altPhpUnit \n", 3, "/tmp/unit.log");
-error_log("CONF: $configPath \n", 3, "/tmp/unit.log");
-error_log("RUN FROM: " . $this->runFrom . " \n", 3, "/tmp/unit.log");
+// error_log("$altPhpUnit \n", 3, "/tmp/unit.log");
+// error_log("CONF: $configPath \n", 3, "/tmp/unit.log");
+// error_log("RUN FROM: " . $this->runFrom . " \n", 3, "/tmp/unit.log");
 
             if (file_exists($altPhpUnit)) {
                 $id = basename(getcwd());
-error_log("exists \n", 3, "/tmp/unit.log");
+// error_log("exists \n", 3, "/tmp/unit.log");
                 $phpunit = $altPhpUnit . " $id";
             }
 
             $cmd = $phpunit . ' %s -c "%s" ' . $this->coverage . $this->path;
-error_log($cmd . "\n", 3, "/tmp/unit.log");
-return 0;
+// error_log($cmd . "\n", 3, "/tmp/unit.log");
             $success = $this->phpci->executeCommand($cmd, $this->args, $this->phpci->buildPath . $configPath);
 
             if ($this->runFrom) {
@@ -268,9 +271,10 @@ return 0;
             }
             
             $cmd = $phpunit;
-//error_log("XX " . $cmd . "\n", 3, "/tmp/unit.log");
+// error_log("XX " . $cmd . "\n", 3, "/tmp/unit.log");
 
             $success = $this->phpci->executeCommand($cmd, $this->args, $this->phpci->buildPath . $directory);
+// error_log("XX SUCC " . print_r($success, 1) . "\n", 3, "/tmp/unit.log");
 
             chdir($curdir);
             return $success;
